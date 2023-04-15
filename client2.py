@@ -11,8 +11,7 @@ y = data['labels']
 
 # Define the model architecture
 model = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(None,100, 9)),
-    tf.keras.layers.Dense(16, activation='relu'),
+    tf.keras.layers.Dense(16, activation='relu', input_shape=(9,)),
     tf.keras.layers.Dense(8, activation='relu'),
     tf.keras.layers.Dense(1)
 ])
@@ -22,8 +21,15 @@ loss_fn = tf.keras.losses.MeanSquaredError()
 optimizer = tf.keras.optimizers.Adam()
 
 # Define a function to train the model on a client
-def train_on_client(model, X, y, loss_fn, optimizer, num_epochs=50):
-    X = X.reshape(1, 100, 9)  # Reshape input data
+# def train_on_client(model, X, y, loss_fn, optimizer, num_epochs=5):
+#     for epoch in range(num_epochs):
+#         for batch_x, batch_y in zip(X, y):
+#             with tf.GradientTape() as tape:
+#                 preds = model(batch_x)
+#                 loss = loss_fn(batch_y, preds)
+#             gradients = tape.gradient(loss, model.trainable_variables)
+#             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+def train_on_client(model, X, y, loss_fn, optimizer, num_epochs=5):
     for epoch in range(num_epochs):
         epoch_loss = 0.0
         epoch_accuracy = tf.keras.metrics.BinaryAccuracy()
@@ -39,7 +45,6 @@ def train_on_client(model, X, y, loss_fn, optimizer, num_epochs=50):
         epoch_acc = epoch_accuracy.result().numpy()
         print("Epoch {}, loss {:.3f}, accuracy {:.3f}".format(epoch+1, epoch_loss, epoch_acc))
     return model
-
 
 # Save the trained model weights
     model.save_weights("trained_model_weights.h5")
@@ -70,7 +75,7 @@ class MyClient(fl.client.NumPyClient):
     def fit(self, parameters, config):
         print("Setting parameters on client")
         self.set_parameters(parameters)
-        print("Parameters set on client")
+        print("Parameters set on client")           
         self.model = train_on_client(self.model, self.X, self.y, self.loss_fn, self.optimizer)
         num_samples = len(self.X)
         print("Evaluating on client")
