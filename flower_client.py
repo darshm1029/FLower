@@ -28,6 +28,7 @@ def train_on_client(model, X, y, loss_fn, optimizer, num_epochs=50):
         epoch_loss = 0.0
         epoch_accuracy = tf.keras.metrics.BinaryAccuracy()
         for batch_x, batch_y in zip(X, y):
+            batch_y = tf.convert_to_tensor(batch_y, dtype=tf.float32) # convert to tensor and cast to float32
             with tf.GradientTape() as tape:
                 preds = model(batch_x)
                 loss = loss_fn(batch_y, preds)
@@ -38,8 +39,8 @@ def train_on_client(model, X, y, loss_fn, optimizer, num_epochs=50):
         epoch_loss /= len(X)
         epoch_acc = epoch_accuracy.result().numpy()
         print("Epoch {}, loss {:.3f}, accuracy {:.3f}".format(epoch+1, epoch_loss, epoch_acc))
+        epoch_accuracy.reset_states()  # Reset accuracy for next epoch
     return model
-
 
 # Save the trained model weights
     model.save_weights("trained_model_weights.h5")
@@ -83,8 +84,9 @@ class MyClient(fl.client.NumPyClient):
         self.set_parameters(parameters)
         loss = evaluate_on_client(self.model, self.X, self.y)
         num_samples = len(self.X)
+        metrics = {"loss": loss}
         logging.debug(f"Received evaluation results from server: num_samples={num_samples}, loss={loss}")
-        return num_samples, {"loss": loss}
+        return loss, num_samples, metrics
 
 # Create a Flower client
 client = MyClient(model, X, y, loss_fn, optimizer)
