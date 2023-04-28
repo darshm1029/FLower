@@ -17,5 +17,5 @@ server = fl.server.Server(client_manager=fl.server.SimpleClientManager(), strate
 
 # Start the Flower server
 logging.debug("Starting server")
-fl.server.start_server(server_address="127.0.0.1:8080", server=server, config=fl.server.ServerConfig(num_rounds=1,round_timeout=100))
+fl.server.start_server(server_address="127.0.0.1:8000", server=server, config=fl.server.ServerConfig(num_rounds=1,round_timeout=100))
 logging.debug("Flower server closed.")
