@@ -1,16 +1,9 @@
 import numpy as np
 import flwr as fl
 import tensorflow as tf
-import logging
-logging.basicConfig(level=logging.DEBUG)
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Dropout
 import pandas as pd
-
-# # Load data
-# data = np.load('data/example_data.npz')
-# X = data['data']
-# y = data['labels']
 
 df = pd.read_csv("LSTM/events.csv")
 del df["Start time UTC"]
@@ -66,23 +59,18 @@ model.add(Dropout(0.2))
 
 # Adding a second LSTM layer and some Dropout regularisation
 model.add(LSTM(units = 50, return_sequences = True))
-# model.add(Dropout(0.2))
 
 # # Adding a third LSTM layer and some Dropout regularisation
 model.add(LSTM(units = 50, return_sequences = True))
-# model.add(Dropout(0.2))
 
 # Adding a fourth LSTM layer and some Dropout regularisation
 model.add(LSTM(units = 50))
-# model.add(Dropout(0.2))
 
 # Adding the output layer
 model.add(Dense(units = 1))
 
 # Compiling the RNN
-model.compile(optimizer = 'adam', loss = 'mean_squared_error')
-
-
+model.compile(optimizer = 'adam', loss = 'mean_squared_error', metrics=['accuracy'])
 
 # Define a function to train the model on a client
 class MyClient(fl.client.NumPyClient):

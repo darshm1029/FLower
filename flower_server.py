@@ -1,6 +1,4 @@
 import flwr as fl
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
 # Define the FedAvg aggregation function
 def aggregate(weights_list):
@@ -16,6 +14,4 @@ def aggregate(weights_list):
 server = fl.server.Server(client_manager=fl.server.SimpleClientManager(), strategy=fl.server.strategy.FedAvg())
 
 # Start the Flower server
-logging.debug("Starting server")
 fl.server.start_server(server_address="127.0.0.1:8000", server=server, config=fl.server.ServerConfig(num_rounds=1,round_timeout=100))
-logging.debug("Flower server closed.")
