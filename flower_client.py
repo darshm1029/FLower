@@ -51,6 +51,10 @@ x_train = x_train.reshape(x_train.shape[0],x_train.shape[1], 1)
 x_test = x_test.reshape(x_test.shape[0], x_test.shape[1],1)
 x_val = x_val.reshape(x_val.shape[0], x_val.shape[1],1)
 
+y_train = y_train.reshape(-1, 1)
+y_test = y_test.reshape(-1, 1)
+y_val = y_val.reshape(-1, 1)
+
 model = Sequential()
 
 # Adding the first LSTM layer and some Dropout regularisation
@@ -79,13 +83,18 @@ class MyClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         model.set_weights(parameters)
-        model.fit(x_train, y_train, validation_data = (x_val,y_val), verbose = 1,epochs = 20 ,batch_size = 20)
+        model.fit(x_train, y_train, validation_data = (x_val,y_val), verbose = 1,epochs = 10 ,batch_size = 20)
         return model.get_weights(), len(x_train), {}
 
     def evaluate(self, parameters, config):
         model.set_weights(parameters)
+        y_pred = model.predict(x_test)
+        y_pred = scaler.inverse_transform(y_pred) # Rescale the predictions back to the original scale
+        y_test_orig = scaler.inverse_transform(y_test) # Rescale the test data back to the original scale
+        for i in range(len(y_pred)):
+            print(f"Actual: {y_test_orig[i]}, Predicted: {y_pred[i]}")
         loss, accuracy = model.evaluate(x_test, y_test)
-        return loss, len(x_test), {"accuracy": float(accuracy)}
+        return loss, len(x_test), {"accuracy": accuracy}
 
 # Create a Flower client
 client = MyClient()
