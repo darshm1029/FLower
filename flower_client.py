@@ -74,7 +74,7 @@ model.add(LSTM(units = 50))
 model.add(Dense(units = 1))
 
 # Compiling the RNN
-model.compile(optimizer = 'adam', loss = 'mean_squared_error', metrics=['accuracy'])
+model.compile(optimizer = 'adam', loss = 'mean_squared_error')
 
 # Define a function to train the model on a client
 class MyClient(fl.client.NumPyClient):
@@ -93,8 +93,8 @@ class MyClient(fl.client.NumPyClient):
         y_test_orig = scaler.inverse_transform(y_test) # Rescale the test data back to the original scale
         for i in range(len(y_pred)):
             print(f"Actual: {y_test_orig[i]}, Predicted: {y_pred[i]}")
-        loss, accuracy = model.evaluate(x_test, y_test)
-        return loss, len(x_test), {"accuracy": accuracy}
+        loss = model.evaluate(x_test, y_test)
+        return loss, len(x_test), {}
 
 # Create a Flower client
 client = MyClient()
